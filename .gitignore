@@ -35,3 +35,6 @@ go.work.sum
 # secret files
 config.yml
 token.json
+
+# Temporary files
+tmp/

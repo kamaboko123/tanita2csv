@@ -190,6 +190,11 @@ func main() {
                 return
             }
             defer file.Close()
+            _, err = file.WriteString("Body\n")
+            if err != nil {
+                logger.Error("Failed to write header to output file", "error", err)
+                return
+            }
             _, err = file.WriteString(innerscan.ToCsv())
             if err != nil {
                 logger.Error("Failed to write to output file", "error", err)
@@ -198,6 +203,7 @@ func main() {
             logger.Info("Data written to output file", "output_file", runOption.output)
         } else {
             // Print to stdout
+            fmt.Println("Body")
             fmt.Print(innerscan.ToCsv())
         }
     }
