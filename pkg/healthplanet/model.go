@@ -54,7 +54,7 @@ type Innerscan struct {
     Data []*InnerscanData
 }
 
-func (ir *InnerscanResponse) ToInnerscan(timezone *time.Location) (*Innerscan, error) {
+func (ir *InnerscanResponse) ToInnerscan() (*Innerscan, error) {
     innerscan := &Innerscan{
         Data: make([]*InnerscanData, 0),
     }
@@ -79,7 +79,7 @@ func (ir *InnerscanResponse) ToInnerscan(timezone *time.Location) (*Innerscan, e
     dates := make(map[string] *InnerscanData)
     for _, d := range ir.Data {
         date, err := time.Parse("200601021504", d.Date)
-        key := date.In(timezone).Format("2006-01-02 15:04")
+        key := date.Format("2006-01-02 15:04")
         if err != nil {
             return nil, fmt.Errorf("failed to parse date: %w", err)
         }
@@ -123,7 +123,7 @@ func (ir *InnerscanResponse) ToInnerscan(timezone *time.Location) (*Innerscan, e
     // validate all data and if not valid, delete it
     for _, d := range dates {
         if err := d.Validate(); err != nil {
-            delete(dates, d.Date.In(timezone).Format("2006-01-02 15:04"))
+            delete(dates, d.Date.Format("2006-01-02 15:04"))
         }
     }
 

@@ -15,7 +15,6 @@ type Config struct {
     TokenFile    string `yaml:"token_file"`
     ClientID     string `yaml:"client_id"`
     ClientSecret string `yaml:"client_secret"`
-    Timezone     string `yaml:"timezone"`
 }
 
 func loadConfig(filePath string) (*Config, error) {
@@ -65,15 +64,18 @@ func (t *ToDateValue) Set(value string) error {
 
 
 type RunOption struct {
-    mode string     // auth, dump
-    from time.Time     // YYYYMMDD
-    to   time.Time     // YYYYMMDD
-    output string   // output file path
-    debug bool       // debug mode
+    configFile string   // config file path
+    mode string         // auth, dump
+    from time.Time      // YYYYMMDD
+    to   time.Time      // YYYYMMDD
+    output string       // output file path
+    debug bool          // debug mode
 }
 
 func getArgs() *RunOption {
     runOption := &RunOption{}
+
+    c := flag.String("c", "config.yml", "Config file path")
 
     m := flag.String("m", "", "Mode to run: auth or dump")
 
@@ -89,6 +91,7 @@ func getArgs() *RunOption {
 
     flag.Parse()
 
+    runOption.configFile = *c
     runOption.debug = *d
     runOption.mode = *m
 
@@ -135,14 +138,9 @@ func main() {
     )
 
     // Load config file
-    config, err := loadConfig("config.yml")
+    config, err := loadConfig(runOption.configFile)
     if err != nil {
         logger.Error("Failed to load config", "error", err)
-        return
-    }
-    timezone, err := time.LoadLocation(config.Timezone)
-    if err != nil {
-        logger.Error("Failed to load timezone. Timezone must be a valid IANA timezone.(e.g, Asia/Tokyo, America/New_York and so on)")
         return
     }
 
@@ -174,7 +172,7 @@ func main() {
         }
 
         // Init HealthPlanet Client
-        hpClient := healthplanet.NewClient(config.URL, auth, logger, timezone)
+        hpClient := healthplanet.NewClient(config.URL, auth, logger)
 
         // Get Innerscan Data
         // Note: between `from` and `to` is limited to 3 month maximum.

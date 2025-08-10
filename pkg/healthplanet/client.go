@@ -16,12 +16,11 @@ type Client struct {
     url string
     auth HealthPlanetAuth
     Logger *slog.Logger
-    Timezone *time.Location
 }
 
 
-func NewClient(url string, auth HealthPlanetAuth, logger *slog.Logger, timezone *time.Location) *Client{
-    return &Client{url: url, auth: auth, Logger: logger, Timezone: timezone}
+func NewClient(url string, auth HealthPlanetAuth, logger *slog.Logger) *Client{
+    return &Client{url: url, auth: auth, Logger: logger}
 }
 
 func (c *Client) GetInnerscanData(from time.Time, to time.Time) (*Innerscan, error){
@@ -69,7 +68,7 @@ func (c *Client) GetInnerscanData(from time.Time, to time.Time) (*Innerscan, err
         return nil, err
     }
 
-    innerscan, err := respData.ToInnerscan(c.Timezone)
+    innerscan, err := respData.ToInnerscan()
     if err != nil {
         return nil, fmt.Errorf("Failed to convert response data to Innerscan: %w", err)
     }
