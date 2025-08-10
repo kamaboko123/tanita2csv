@@ -10,6 +10,8 @@ import (
     "flag"
 )
 
+const Version = "1.0.0"
+
 type Config struct {
     URL          string `yaml:"url"`
     TokenFile    string `yaml:"token_file"`
@@ -88,8 +90,15 @@ func getArgs() *RunOption {
     o := flag.String("o", "", "Output file path")
 
     d := flag.Bool("v", false, "Debug mode")
+    
+    version := flag.Bool("version", false, "Show version information")
 
     flag.Parse()
+
+    if *version {
+        fmt.Printf("tanita2csv version %s\n", Version)
+        os.Exit(0)
+    }
 
     runOption.configFile = *c
     runOption.debug = *d
