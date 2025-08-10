@@ -8,7 +8,6 @@ import (
     "encoding/json"
     "errors"
     "time"
-    "strconv"
     "log/slog"
 )
 
@@ -25,16 +24,9 @@ func NewClient(url string, auth HealthPlanetAuth, logger *slog.Logger, timezone 
     return &Client{url: url, auth: auth, Logger: logger, Timezone: timezone}
 }
 
+func (c *Client) GetInnerscanData(from time.Time, to time.Time) (*Innerscan, error){
+    c.Logger.Debug(fmt.Sprintf("GetInnerscanData called with from: %s, to: %s", from.Format("2006-01-02 15:04:05"), to.Format("2006-01-02 15:04:05")))
 
-
-type InnerscanData struct {
-    Date time.Time
-    Weight float64
-    BodyFat float64
-}
-type InnerscanDataMap map[string]*InnerscanData
-
-func (c *Client) GetInnerscanData(from time.Time) (InnerscanDataMap, error){
     u, err := url.Parse(c.url)
     if err != nil {
         return nil, err
@@ -49,6 +41,7 @@ func (c *Client) GetInnerscanData(from time.Time) (InnerscanDataMap, error){
     q := u.Query()
     q.Set("access_token", token)
     q.Set("from", from.Format("20060102150405"))
+    q.Set("to", to.Format("20060102150405"))
     q.Set("tag", "6021,6022") // 6021: Weight, 6022: Body Fat
 
     u.RawQuery = q.Encode()
@@ -70,44 +63,17 @@ func (c *Client) GetInnerscanData(from time.Time) (InnerscanDataMap, error){
 
     body, _ := io.ReadAll(resp.Body)
     c.Logger.Debug(fmt.Sprintf("Response: %s", body))
-    resp_data := InnerscanResponse{}
-    err = json.Unmarshal(body, &resp_data)
+    respData := InnerscanResponse{}
+    err = json.Unmarshal(body, &respData)
     if err != nil {
         return nil, err
     }
 
-    return(resp_data.GetInnerscanDataMap(c.Timezone))
-}
-
-func (resp *InnerscanResponse) GetInnerscanDataMap(timezone *time.Location) (InnerscanDataMap, error) {
-    ret := make(InnerscanDataMap)
-    
-    for _, d := range resp.Data {
-        if _, ok := ret[d.Date]; !ok {
-            ret[d.Date] = &InnerscanData{}
-        }
-        date, err := time.ParseInLocation("200601021504", d.Date, timezone)
-        if err != nil {
-            return nil, err
-        }
-        ret[d.Date].Date = date
-
-        if d.Tag == "6021" {
-            value, err := strconv.ParseFloat(d.KeyData, 64)
-            if err != nil {
-                return nil, err
-            }
-            ret[d.Date].Weight = value
-        }
-        if d.Tag == "6022" {
-            value, err := strconv.ParseFloat(d.KeyData, 64)
-            if err != nil {
-                return nil, err
-            }
-            ret[d.Date].BodyFat = value
-        }
+    innerscan, err := respData.ToInnerscan(c.Timezone)
+    if err != nil {
+        return nil, fmt.Errorf("Failed to convert response data to Innerscan: %w", err)
     }
 
-    return ret, nil
+    return innerscan, nil
 }
 

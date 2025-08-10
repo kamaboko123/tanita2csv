@@ -46,7 +46,7 @@ if err != nil {
     logger.Error("Failed to get token", "error", err)
     return
 }
-fmt.Println("Access token:", token)
+logger.Debug("Access token retrieved", "token", token)
 */
 
 const TokenRefreshThreshold = 60 * 60 * 24 * 7 // 1 week
@@ -69,6 +69,7 @@ func (t *Token) IsTokenNeedRefresh() bool {
 }
 
 
+const RedirectUri = "https://www.healthplanet.jp/success.html"
 
 type SimpleAuth struct {
     Url string
@@ -173,7 +174,7 @@ func (a *SimpleAuth) BuildAuthURL() (string, error) {
     q := u.Query()
     q.Set("client_id", a.ClientId)
     q.Set("client_secret", a.clientSecret)
-    q.Set("redirect_uri", "http://localhost")
+    q.Set("redirect_uri", RedirectUri)
     q.Set("response_type", "code")
     q.Set("scope", "innerscan,sphygmomanometer,pedometer,smug")
     u.RawQuery = q.Encode()
@@ -192,7 +193,7 @@ func (a *SimpleAuth) GetTokenWithCode(code string) (*Token, error) {
     q := u.Query()
     q.Set("client_id", a.ClientId)
     q.Set("client_secret", a.clientSecret)
-    q.Set("redirect_uri", "http://localhost")
+    q.Set("redirect_uri", RedirectUri)
     q.Set("grant_type", "authorization_code")
     q.Set("code", code)
     u.RawQuery = q.Encode()
@@ -232,7 +233,7 @@ func (a *SimpleAuth) RefreshToken() error{
     if !a.token.IsTokenNeedRefresh(){
         return nil
     }
-    fmt.Println("Token is need to refresh")
+    a.Logger.Info("Token needs to be refreshed")
 
     if a.token == nil {
         return errors.New("[HealthPlanet]Token is not initialized")
@@ -247,11 +248,11 @@ func (a *SimpleAuth) RefreshToken() error{
     q := u.Query()
     q.Set("client_id", a.ClientId)
     q.Set("client_secret", a.clientSecret)
-    q.Set("redirect_uri", "http://localhost")
+    q.Set("redirect_uri", RedirectUri)
     q.Set("grant_type", "refresh_token")
     q.Set("refresh_token", a.token.RefreshToken)
     u.RawQuery = q.Encode()
-    fmt.Println(u.String())
+    a.Logger.Debug("Refresh token request URL", "url", u.String())
 
     req, err := http.NewRequest("POST", u.String(), nil)
     if err != nil {
@@ -271,7 +272,7 @@ func (a *SimpleAuth) RefreshToken() error{
     if err != nil {
         return err
     }
-    fmt.Println("Success to refresh token")
+    a.Logger.Info("Successfully refreshed token")
 
     err = a.SaveToken()
     if err != nil {
@@ -293,7 +294,7 @@ func (a *SimpleAuth) Auth() error {
     if err != nil {
         return err
     }
-    fmt.Printf("Access to follwing URL with browser: %s\n", url)
+    fmt.Printf("Access to following URL with browser: %s\n", url)
 
     fmt.Printf("And enter code:")
     scanner := bufio.NewScanner(os.Stdin)
@@ -310,7 +311,7 @@ func (a *SimpleAuth) Auth() error {
         return err
     }
 
-    fmt.Println("Success to Authenticate!")
+    a.Logger.Info("Successfully authenticated!")
     return nil
 }
 
