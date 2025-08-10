@@ -1,7 +1,23 @@
 # tanita2csv
 Convert Tanita Health planet body data to garmin importable CSV
 
-## Build
+## Installation
+
+### Download from Releases
+You can download pre-built binaries from the [GitHub releases page](https://github.com/kamaboko123/tanita2csv/releases):
+
+1. Visit the [releases page](https://github.com/kamaboko123/tanita2csv/releases)
+2. Download the binary for your operating system from the latest release assets
+3. Make the downloaded file executable:
+```bash
+chmod +x tanita2csv-linux-amd64
+```
+4. (Optional) Move to a directory in your PATH:
+```bash
+sudo mv tanita2csv-linux-amd64 /usr/local/bin/tanita2csv
+```
+
+### Build from Source
 To build the `tanita2csv` binary, you need to have Go installed on your system. Follow these steps:
 1. Clone the repository:
 ```bash
