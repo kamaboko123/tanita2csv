@@ -46,7 +46,6 @@ token_file: "token.json"
 If you don't have client_id and client_secret, you need to register your application on HealthPlanet API.
 
 ### Register the application for HealthPlanet API
-# https://www.healthplanet.jp/apis_account.do
 1. Go to [HealthPlanet API registration page](https://www.healthplanet.jp/apis_account.do)
 2. Register a new application
 3. Fill in the fields:
