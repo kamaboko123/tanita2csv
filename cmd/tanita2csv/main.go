@@ -107,9 +107,7 @@ func getArgs() *RunOption {
     switch runOption.mode {
     case "dump":
         runOption.from = f.Time.Truncate(24 * time.Hour)
-        runOption.to = t.Time.Truncate(24 * time.Hour)
-        runOption.from.Truncate(24 * time.Hour)
-        runOption.to.Truncate(24 * time.Hour)
+        runOption.to = t.Time.Truncate(24 * time.Hour).Add(23 * time.Hour + 59 * time.Minute + 59 * time.Second) // End of the day
 
         if runOption.from.After(runOption.to) {
             fmt.Println("From date cannot be after To date.")

@@ -39,6 +39,7 @@ func (c *Client) GetInnerscanData(from time.Time, to time.Time) (*Innerscan, err
     u.Path = "/status/innerscan.json"
     q := u.Query()
     q.Set("access_token", token)
+    q.Set("date", "1") // from, to date type: "1" means mesurement date
     q.Set("from", from.Format("20060102150405"))
     q.Set("to", to.Format("20060102150405"))
     q.Set("tag", "6021,6022") // 6021: Weight, 6022: Body Fat
