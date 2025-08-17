@@ -12,13 +12,13 @@ LIB_SRC_FILES := $(shell find $(LIB_SRC_DIR) -name '*.go')
 # リリース関連の設定
 VERSION := $(shell git describe --tags --always --dirty 2>/dev/null || echo "dev")
 RELEASE_DIR := releases
-PLATFORMS := linux/amd64
+PLATFORMS := linux/amd64 windows/amd64
 
 # リリース用のビルド設定
 define build-release
 	GOOS=$(word 1,$(subst /, ,$(1))) GOARCH=$(word 2,$(subst /, ,$(1))) go build \
 		-ldflags "-s -w -X main.version=$(VERSION)" \
-		-o $(RELEASE_DIR)/$(2)-$(VERSION)-$(subst /,-,$(1)) \
+		-o $(RELEASE_DIR)/$(2)-$(VERSION)-$(subst /,-,$(1))$(if $(findstring windows,$(1)),.exe,) \
 		$(CMD_SRC_DIR)/$(2)/main.go
 endef
 
@@ -33,7 +33,7 @@ $(TARGET_DIR)/%: $(CMD_SRC_DIR)/%/main.go $(LIB_SRC_FILES)
 .PHONY: release
 release: clean-release
 	mkdir -p $(RELEASE_DIR)
-	$(foreach platform,$(PLATFORMS),$(foreach target,$(EXECUTABLE_FILENAMES),$(call build-release,$(platform),$(target))))
+	$(foreach platform,$(PLATFORMS),$(foreach target,$(EXECUTABLE_FILENAMES),$(call build-release,$(platform),$(target));))
 
 .PHONY: release-all
 release-all: release
