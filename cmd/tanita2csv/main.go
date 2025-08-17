@@ -81,7 +81,7 @@ func getArgs() *RunOption {
 
     m := flag.String("m", "", "Mode to run: auth or dump")
 
-    f := &FromDateValue{Time: time.Now().AddDate(0, 0, -90)} // Default is 3 months ago
+    f := &FromDateValue{Time: time.Now().AddDate(0, 0, -89)} // Default is 3 months ago
     flag.Var(f, "f", "From date (YYYY-MM-DD) for dump mode. Default is 3 months ago from today.")
 
     t := &ToDateValue{Time: time.Now()} // Default is today
@@ -106,15 +106,15 @@ func getArgs() *RunOption {
 
     switch runOption.mode {
     case "dump":
-        runOption.from = f.Time.Truncate(24 * time.Hour)
-        runOption.to = t.Time.Truncate(24 * time.Hour).Add(23 * time.Hour + 59 * time.Minute + 59 * time.Second) // End of the day
+        runOption.from = f.Truncate(time.Hour).Add(-time.Duration(f.Hour()) * time.Hour)
+        runOption.to = t.Truncate(time.Hour).Add(-time.Duration(t.Hour()) * time.Hour).Add(23 * time.Hour + 59 * time.Minute + 59 * time.Second) // End of the day
 
         if runOption.from.After(runOption.to) {
             fmt.Println("From date cannot be after To date.")
             os.Exit(1)
         }
         if runOption.to.Sub(runOption.from) > 90*24*time.Hour{
-            fmt.Println("The date range cannot exceed 90 days.")
+            fmt.Println("The date range cannot exceed 90 days.(from:", runOption.from, ", to:", runOption.to, ")")
             os.Exit(1)
         }
         runOption.output = *o
